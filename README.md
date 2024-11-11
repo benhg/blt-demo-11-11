@@ -10,9 +10,9 @@ Kill mac:
 
 
 Launch BLT:
-`mpirun --hostfile hostfile.txt exe/mpi_blt `
+`mpirun --hostfile hostfile.txt exe/pop_dynamics_mpi_blt`
 
 Kill BLT:
 
-`srun --nodes=4 killall -SIGINT mpi_blt`
+`srun --nodes=4 killall -SIGINT pop_dynamics_mpi_blt`
 
