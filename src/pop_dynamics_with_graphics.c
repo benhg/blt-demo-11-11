@@ -3,8 +3,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#define WIDTH 100      // Grid width
-#define HEIGHT 100      // Grid height
+#define WIDTH 50     // Grid width
+#define HEIGHT 30      // Grid height
 #define INITIAL_POP 100 // Initial number of individuals
 #define MAX_STEPS 1000  // Maximum steps in the simulation
 #define SURVIVAL_PROB 0.8 // Probability of survival for each individual
