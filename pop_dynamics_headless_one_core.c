@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <signal.h>
+#include <sys/time.h> 
 
 #define WIDTH 100      // Grid width
 #define HEIGHT 100      // Grid height
@@ -10,8 +13,18 @@
 #define SURVIVAL_PROB 0.8 // Probability of survival for each individual
 #define REPRODUCTION_PROB 0.1 // Probability of reproduction
 
+// Step count
+uint64_t step;
+
+// Signal handling
+struct sigaction sigact;
+
 // Grid to represent the ecosystem (0 = empty, 1 = individual present)
 int grid[HEIGHT][WIDTH];
+
+// Timer
+struct timeval t1, t2;
+double elapsedTime;
 
 // Function to initialize the grid with some individuals
 void initialize_grid(int initial_population) {
@@ -72,21 +85,56 @@ void simulate_step() {
     }
 }
 
+/**
+ * Signal handlers
+ */
+static void signal_handler(int sig){
+    if (sig == SIGINT){ printf("Caught signal for Ctrl+C\n");}
+
+
+    // stop timer
+    gettimeofday(&t2, NULL);
+
+    
+
+    printf("Total number of steps executed was %llu\n", step);
+
+    // compute and print the elapsed time in millisec
+    elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;      // sec to ms
+    elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000.0;   // us to ms
+    printf("%llu steps in %f ms. is %f steps / ms\n", step, elapsedTime , (step/elapsedTime));
+
+    exit(0);
+}
+
+void init_signals(void){
+    sigact.sa_handler = signal_handler;
+    sigemptyset(&sigact.sa_mask);
+    sigact.sa_flags = 0;
+    sigaction(SIGINT, &sigact, (struct sigaction *)NULL);
+}
+
 int main() {
+
+    // start timer
+    gettimeofday(&t1, NULL);
+
+
     srand(time(0)); // Seed the random number generator
+    init_signals();
 
     // Initialize the grid with some individuals
     initialize_grid(INITIAL_POP);
 
     // Simulate for a number of steps
-    int step;
-    for (step = 0; step < MAX_STEPS; step++) {
+    // step is global
+    for (step = 0; ;step++) {
 
         simulate_step();
 
     }
 
-    printf("Computed %d steps\n", step + 1);
+    printf("Computed %llu steps\n", step + 1);
 
     return 0;
 }

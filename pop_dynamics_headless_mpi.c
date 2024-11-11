@@ -1,10 +1,15 @@
+/**
+ * NOTE: To kill, do killall -SIGINT mpi_test (or exe name)
+ * On SLURM, scancel should do the trick.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <signal.h>
-
+#include <sys/time.h>
 #include <mpi.h>
 
 #define WIDTH 100      // Grid width
@@ -15,7 +20,7 @@
 #define REPRODUCTION_PROB 0.1 // Probability of reproduction
 
 // Global MPI args
-uint64_t step;
+uint64_t step = 0;
 uint64_t my_step = 0;
 int myid;
 
@@ -24,6 +29,11 @@ struct sigaction sigact;
 
 // Grid to represent the ecosystem (0 = empty, 1 = individual present)
 int grid[HEIGHT][WIDTH];
+
+// Timer
+struct timeval t1, t2;
+double elapsedTime;
+
 
 // Function to initialize the grid with some individuals
 void initialize_grid(int initial_population) {
@@ -96,6 +106,12 @@ static void signal_handler(int sig){
 
     if (myid == 0){
         printf("Total number of steps executed was %llu\n", step);
+        // stop timer
+        gettimeofday(&t2, NULL);
+        // compute and print the elapsed time in millisec
+        elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;      // sec to ms
+        elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000.0;   // us to ms
+        printf("%llu steps in %f ms. is %f steps / ms\n", step, elapsedTime , (step/elapsedTime));
     }
 
     MPI_Finalize();
@@ -127,7 +143,10 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD,&myid);
 
    
-
+    if (myid == 0){
+        // start timer
+        gettimeofday(&t1, NULL);
+    }
 
     srand(time(0)); // Seed the random number generator
 
